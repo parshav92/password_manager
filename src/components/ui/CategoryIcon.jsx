@@ -1,4 +1,4 @@
-// Category icon component with colored background
+// Category icon with tinted background
 
 import {
   Users, Mail, Landmark, Briefcase, ShoppingBag,
@@ -14,22 +14,18 @@ const iconMap = {
 export default function CategoryIcon({ categoryId, size = 36 }) {
   const category = CATEGORY_MAP[categoryId];
   const iconName = category?.icon || 'Globe';
-  const color = category?.color || '#9A9A9A';
+  const color = category?.color || '#8A9AA3';
   const Icon = iconMap[iconName] || Globe;
-  const iconSize = size * 0.5;
+  const iconSize = Math.round(size * 0.44);
 
   return (
     <div
-      className="category-icon"
+      className="flex items-center justify-center shrink-0 rounded-[28%]"
       style={{
         width: size,
         height: size,
         minWidth: size,
-        borderRadius: size * 0.28,
-        backgroundColor: color + '18',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: `${color}1A`,
       }}
     >
       <Icon size={iconSize} color={color} strokeWidth={2} />

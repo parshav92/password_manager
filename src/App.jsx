@@ -1,6 +1,7 @@
 // VaultSoft — Main App Component
 
 import { useState, useMemo, useCallback } from 'react';
+import { Shield } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { useVault } from './hooks/useVault';
 import { useSearch } from './hooks/useSearch';
@@ -23,12 +24,10 @@ function AppInner() {
   const search = useSearch(vault.entries);
   useTheme(auth.settings?.theme);
 
-  // UI state
-  const [view, setView] = useState('list'); // 'list' | 'detail' | 'add' | 'edit' | 'health' | 'settings'
+  const [view, setView] = useState('list');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileTab, setMobileTab] = useState('vault');
 
-  // Entry counts by category for sidebar
   const entryCounts = useMemo(() => {
     const counts = {};
     vault.entries.forEach(e => {
@@ -37,13 +36,11 @@ function AppInner() {
     return counts;
   }, [vault.entries]);
 
-  // Selected entry
   const selectedEntry = useMemo(() => {
     if (!vault.selectedId) return null;
     return vault.entries.find(e => e.id === vault.selectedId) || null;
   }, [vault.selectedId, vault.entries]);
 
-  // View handlers
   const handleSelectEntry = useCallback((id) => {
     vault.setSelectedId(id);
     setView('detail');
@@ -101,7 +98,6 @@ function AppInner() {
     setMobileTab('settings');
   }, []);
 
-  // Loading
   if (auth.loading) {
     return (
       <div className="flex items-center justify-center h-dvh bg-base">
@@ -110,28 +106,29 @@ function AppInner() {
     );
   }
 
-  // Setup screen
   if (!auth.isSetup) {
     return <SetupScreen onSetup={auth.setup} loading={auth.loading} />;
   }
 
-  // Lock screen
   if (!auth.isUnlocked) {
     return (
       <LockScreen
         onUnlock={auth.unlock}
+        onUnlockBiometric={auth.unlockBiometric}
         onGetHint={auth.getHint}
         error={auth.error}
         loading={auth.loading}
+        biometricEnrolled={auth.biometricEnrolled}
       />
     );
   }
 
-  // Determine right panel content
+  const showListOnly = view === 'list';
+
   const renderRightPanel = () => {
     switch (view) {
       case 'detail':
-        if (!selectedEntry) return <div className="flex items-center justify-center h-full" />;
+        if (!selectedEntry) return <EmptyDetail />;
         return (
           <EntryDetail
             entry={selectedEntry}
@@ -143,10 +140,7 @@ function AppInner() {
         );
       case 'add':
         return (
-          <EntryForm
-            onSave={handleSaveEntry}
-            onCancel={handleBackToList}
-          />
+          <EntryForm onSave={handleSaveEntry} onCancel={handleBackToList} />
         );
       case 'edit':
         return (
@@ -172,20 +166,14 @@ function AppInner() {
             onUpdateSettings={auth.updateSettings}
             onLock={auth.lock}
             onClose={handleBackToList}
+            biometricEnrolled={auth.biometricEnrolled}
+            onBiometricEnrolledChange={auth.setBiometricEnrolled}
           />
         );
       default:
-        return (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-txt-tertiary tracking-wide">Select an entry to view details</p>
-          </div>
-        );
+        return <EmptyDetail />;
     }
   };
-
-  // On mobile, show only one panel at a time
-  const isMobileView = typeof window !== 'undefined' && window.innerWidth <= 640;
-  const showListOnMobile = view === 'list' && mobileTab === 'vault';
 
   return (
     <div className="flex min-h-dvh bg-base">
@@ -203,9 +191,8 @@ function AppInner() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
-      <main className={`flex flex-1 h-dvh overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${sidebarCollapsed ? 'ml-[60px]' : 'ml-[240px]'} max-lg:ml-[60px] max-md:ml-0 max-md:flex-col max-md:pb-[60px]`}>
-        {/* List panel */}
-        <div className={`w-[340px] min-w-[340px] border-r border-border bg-surface overflow-hidden flex flex-col max-lg:w-[300px] max-lg:min-w-[300px] max-md:w-full max-md:min-w-full max-md:border-r-0 max-md:h-full ${(!showListOnMobile && isMobileView) ? 'max-md:hidden' : ''}`}>
+      <main className={`flex flex-1 h-dvh overflow-hidden transition-[margin] duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] ${sidebarCollapsed ? 'ml-16' : 'ml-60'} max-lg:ml-16 max-md:ml-0 max-md:flex-col max-md:pb-14`}>
+        <div className={`w-[340px] min-w-[340px] border-r border-border bg-surface overflow-hidden flex flex-col max-lg:w-[300px] max-lg:min-w-[300px] max-md:w-full max-md:min-w-full max-md:border-r-0 max-md:h-full ${!showListOnly ? 'max-md:hidden' : ''}`}>
           <EntryList
             entries={search.filtered}
             query={search.query}
@@ -221,8 +208,7 @@ function AppInner() {
           />
         </div>
 
-        {/* Detail panel */}
-        <div className={`flex-1 overflow-hidden bg-base max-md:fixed max-md:inset-0 max-md:z-20 max-md:animate-slide-in-right max-md:pb-0 ${(showListOnMobile && isMobileView) ? 'max-md:hidden' : ''}`}>
+        <div className={`flex-1 overflow-hidden bg-base max-md:fixed max-md:inset-0 max-md:z-20 max-md:animate-slide-in-right ${showListOnly ? 'max-md:hidden' : ''}`}>
           {renderRightPanel()}
         </div>
       </main>
@@ -234,6 +220,17 @@ function AppInner() {
         showFavoritesOnly={search.showFavoritesOnly}
         onFavoritesToggle={search.setShowFavoritesOnly}
       />
+    </div>
+  );
+}
+
+function EmptyDetail() {
+  return (
+    <div className="hidden md:flex flex-col items-center justify-center h-full gap-3 px-8">
+      <div className="w-12 h-12 rounded-2xl bg-accent-subtle flex items-center justify-center text-accent">
+        <Shield size={22} strokeWidth={1.5} />
+      </div>
+      <p className="text-sm text-txt-secondary text-center">Select an entry to view details</p>
     </div>
   );
 }

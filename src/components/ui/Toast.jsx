@@ -63,7 +63,7 @@ function ToastItem({ toast, onDismiss }) {
   };
 
   return (
-    <div className={`flex items-center gap-2.5 px-4 py-3 bg-elevated border border-border rounded-xl shadow-lg backdrop-blur-xl transition-all duration-200 ${exiting ? 'opacity-0 translate-x-4' : 'animate-slide-in-right'}`}>
+    <div className={`flex items-center gap-2.5 px-4 py-3 bg-surface border border-border rounded-xl transition-all duration-200 ${exiting ? 'opacity-0 translate-x-4' : 'animate-slide-in-right'}`}>
       <span className={colorMap[toast.type]}>{icons[toast.type]}</span>
       <span className="text-sm text-txt flex-1">{toast.message}</span>
       <button

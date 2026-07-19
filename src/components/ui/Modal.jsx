@@ -47,7 +47,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
       onClick={handleOverlayClick}
     >
       <div
-        className={`w-full ${sizeClass} bg-elevated border border-border rounded-2xl shadow-2xl animate-scale-in`}
+        className={`w-full ${sizeClass} bg-surface border border-border rounded-2xl animate-scale-in`}
         ref={contentRef}
         role="dialog"
         aria-modal="true"

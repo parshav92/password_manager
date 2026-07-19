@@ -2,30 +2,31 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { isVaultSetup, setupVault, unlockVault, getPasswordHint } from '../auth/masterPassword';
+import { unlockWithBiometric, isBiometricEnrolled } from '../auth/biometric';
 import { loadSettings } from '../storage/settingsStore';
 
 export function useAuth() {
   const [state, setState] = useState({
     loading: true,
-    isSetup: false,    // Has a master password been set?
-    isUnlocked: false, // Is the vault currently unlocked?
-    cryptoKey: null,    // The in-memory encryption key
+    isSetup: false,
+    isUnlocked: false,
+    cryptoKey: null,
     settings: null,
     error: null,
+    biometricEnrolled: false,
   });
 
   const lockTimerRef = useRef(null);
   const lastActivityRef = useRef(Date.now());
 
-  // Check initial state
   useEffect(() => {
     (async () => {
       const setup = await isVaultSetup();
-      setState(s => ({ ...s, loading: false, isSetup: setup }));
+      const biometricEnrolled = setup ? await isBiometricEnrolled() : false;
+      setState(s => ({ ...s, loading: false, isSetup: setup, biometricEnrolled }));
     })();
   }, []);
 
-  // Auto-lock timer
   useEffect(() => {
     if (!state.isUnlocked || !state.settings) return;
 
@@ -43,11 +44,10 @@ export function useAuth() {
       lastActivityRef.current = Date.now();
     };
 
-    // Track user activity
     const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
     events.forEach(e => window.addEventListener(e, resetActivity));
 
-    lockTimerRef.current = setInterval(checkActivity, 15000); // Check every 15s
+    lockTimerRef.current = setInterval(checkActivity, 15000);
 
     return () => {
       events.forEach(e => window.removeEventListener(e, resetActivity));
@@ -55,7 +55,6 @@ export function useAuth() {
     };
   }, [state.isUnlocked, state.settings]);
 
-  // Lock on visibility change (tab hidden)
   useEffect(() => {
     if (!state.isUnlocked) return;
 
@@ -81,9 +80,10 @@ export function useAuth() {
         isUnlocked: true,
         cryptoKey: key,
         settings,
+        biometricEnrolled: false,
       }));
       return true;
-    } catch (err) {
+    } catch {
       setState(s => ({ ...s, loading: false, error: 'Setup failed. Please try again.' }));
       return false;
     }
@@ -98,6 +98,7 @@ export function useAuth() {
         return false;
       }
       const settings = await loadSettings(key);
+      const biometricEnrolled = await isBiometricEnrolled();
       lastActivityRef.current = Date.now();
       setState(s => ({
         ...s,
@@ -105,10 +106,46 @@ export function useAuth() {
         isUnlocked: true,
         cryptoKey: key,
         settings,
+        biometricEnrolled,
       }));
       return true;
-    } catch (err) {
+    } catch {
       setState(s => ({ ...s, loading: false, error: 'Unlock failed. Please try again.' }));
+      return false;
+    }
+  }, []);
+
+  const unlockBiometric = useCallback(async () => {
+    try {
+      setState(s => ({ ...s, error: null, loading: true }));
+      const result = await unlockWithBiometric();
+      if (!result.key) {
+        setState(s => ({
+          ...s,
+          loading: false,
+          error: result.cancelled
+            ? null
+            : (result.error || 'Biometric unlock failed. Use your master password.'),
+        }));
+        return false;
+      }
+      const settings = await loadSettings(result.key);
+      lastActivityRef.current = Date.now();
+      setState(s => ({
+        ...s,
+        loading: false,
+        isUnlocked: true,
+        cryptoKey: result.key,
+        settings,
+        biometricEnrolled: true,
+      }));
+      return true;
+    } catch {
+      setState(s => ({
+        ...s,
+        loading: false,
+        error: 'Biometric unlock failed. Use your master password.',
+      }));
       return false;
     }
   }, []);
@@ -127,6 +164,10 @@ export function useAuth() {
     setState(s => ({ ...s, settings: newSettings }));
   }, []);
 
+  const setBiometricEnrolled = useCallback((enrolled) => {
+    setState(s => ({ ...s, biometricEnrolled: enrolled }));
+  }, []);
+
   const clearError = useCallback(() => {
     setState(s => ({ ...s, error: null }));
   }, []);
@@ -139,8 +180,10 @@ export function useAuth() {
     ...state,
     setup,
     unlock,
+    unlockBiometric,
     lock,
     updateSettings,
+    setBiometricEnrolled,
     clearError,
     getHint,
   };

@@ -1,14 +1,14 @@
 // Application constants
 
 export const CATEGORIES = [
-  { id: 'social', label: 'Social', icon: 'Users', color: '#6C8EBF' },
-  { id: 'email', label: 'Email', icon: 'Mail', color: '#D4726A' },
-  { id: 'banking', label: 'Banking', icon: 'Landmark', color: '#6AAF6E' },
-  { id: 'work', label: 'Work', icon: 'Briefcase', color: '#D4A04A' },
-  { id: 'shopping', label: 'Shopping', icon: 'ShoppingBag', color: '#C97BC4' },
-  { id: 'entertainment', label: 'Entertainment', icon: 'Gamepad2', color: '#E07B54' },
-  { id: 'devtech', label: 'Dev / Tech', icon: 'Code', color: '#8B7EC8' },
-  { id: 'other', label: 'Other', icon: 'MoreHorizontal', color: '#9A9A9A' },
+  { id: 'social', label: 'Social', icon: 'Users', color: '#3B82A0' },
+  { id: 'email', label: 'Email', icon: 'Mail', color: '#C45C52' },
+  { id: 'banking', label: 'Banking', icon: 'Landmark', color: '#2F9E5F' },
+  { id: 'work', label: 'Work', icon: 'Briefcase', color: '#C4892A' },
+  { id: 'shopping', label: 'Shopping', icon: 'ShoppingBag', color: '#B85A9A' },
+  { id: 'entertainment', label: 'Entertainment', icon: 'Gamepad2', color: '#D06B45' },
+  { id: 'devtech', label: 'Dev / Tech', icon: 'Code', color: '#0F766E' },
+  { id: 'other', label: 'Other', icon: 'MoreHorizontal', color: '#8A9AA3' },
 ];
 
 export const CATEGORY_MAP = Object.fromEntries(

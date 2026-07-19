@@ -32,7 +32,7 @@ export default function EntryForm({ entry, onSave, onCancel, loading }) {
   const strength = calculateStrength(form.password);
 
   const strengthColor = {
-    'Weak': 'bg-bad', 'Fair': 'bg-warn', 'Good': 'bg-blue-400', 'Strong': 'bg-ok', 'None': 'bg-txt-tertiary',
+    Weak: 'bg-bad', Fair: 'bg-warn', Good: 'bg-accent', Strong: 'bg-ok', None: 'bg-txt-tertiary',
   };
 
   const updateField = (field, value) => {
@@ -82,22 +82,20 @@ export default function EntryForm({ entry, onSave, onCancel, loading }) {
     await onSave(cleanForm);
   };
 
-  const inputClass = "w-full py-2.5 px-3.5 text-sm text-txt bg-elevated border border-border rounded-xl outline-none transition-all duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-muted)] placeholder:text-txt-tertiary";
+  const inputClass = "w-full py-2.5 px-3.5 text-sm text-txt bg-surface border border-border rounded-xl outline-none transition-[border-color,box-shadow] duration-150 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-muted)] placeholder:text-txt-tertiary";
 
   return (
     <div className="h-full overflow-y-auto animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-base/80 backdrop-blur-xl z-10">
-        <h2 className="text-base font-semibold text-txt tracking-[-0.02em]">{isEdit ? 'Edit Entry' : 'Add Entry'}</h2>
-        <button className="flex items-center justify-center w-8 h-8 rounded-lg border-none bg-transparent text-txt-tertiary cursor-pointer transition-all duration-150 hover:bg-overlay hover:text-txt" onClick={onCancel} aria-label="Cancel">
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-border sticky top-0 bg-base/90 backdrop-blur-md z-10">
+        <h2 className="text-base font-semibold text-txt tracking-[-0.03em]">{isEdit ? 'Edit entry' : 'New entry'}</h2>
+        <button type="button" className="flex items-center justify-center w-9 h-9 rounded-lg border-none bg-transparent text-txt-tertiary cursor-pointer transition-colors duration-150 hover:bg-overlay hover:text-txt" onClick={onCancel} aria-label="Cancel">
           <X size={18} />
         </button>
       </div>
 
-      <form className="px-6 py-6 flex flex-col gap-5" onSubmit={handleSubmit}>
-        {/* Title */}
+      <form className="px-5 py-6 flex flex-col gap-5 max-w-lg mx-auto" onSubmit={handleSubmit}>
         <FormField label="Title" required error={errors.title}>
-          <input id="entry-title" type="text" className={`${inputClass} ${errors.title ? '!border-bad' : ''}`} placeholder="e.g., Google Account" value={form.title} onChange={(e) => updateField('title', e.target.value)} autoFocus autoComplete="off" />
+          <input id="entry-title" type="text" className={`${inputClass} ${errors.title ? '!border-bad' : ''}`} placeholder="e.g. Google" value={form.title} onChange={(e) => updateField('title', e.target.value)} autoFocus autoComplete="off" />
         </FormField>
 
         {/* Category */}
@@ -162,10 +160,10 @@ export default function EntryForm({ entry, onSave, onCancel, loading }) {
         <FormField label="Tags">
           <div className={`flex flex-wrap items-center gap-1.5 ${inputClass} !p-2`}>
             {form.tags.map(tag => (
-              <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-accent bg-accent-muted rounded-full">
+              <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-accent bg-accent-muted rounded-md">
                 <Tag size={10} />
                 {tag}
-                <button type="button" onClick={() => removeTag(tag)} className="flex items-center justify-center w-3.5 h-3.5 rounded-full border-none bg-transparent text-accent cursor-pointer hover:text-bad transition-colors">
+                <button type="button" onClick={() => removeTag(tag)} className="flex items-center justify-center w-3.5 h-3.5 rounded-md border-none bg-transparent text-accent cursor-pointer hover:text-bad transition-colors" aria-label={`Remove ${tag}`}>
                   <X size={10} />
                 </button>
               </span>
@@ -208,13 +206,12 @@ export default function EntryForm({ entry, onSave, onCancel, loading }) {
           )}
         </FormField>
 
-        {/* Submit */}
         <div className="flex gap-3 pt-4 border-t border-border">
-          <button type="button" className="flex-1 py-2.5 text-sm font-semibold text-txt-secondary bg-surface rounded-xl cursor-pointer transition-all duration-200 hover:bg-overlay" onClick={onCancel}>
+          <button type="button" className="flex-1 py-2.5 text-sm font-semibold text-txt-secondary bg-surface border border-border rounded-xl cursor-pointer transition-colors duration-150 hover:bg-overlay" onClick={onCancel}>
             Cancel
           </button>
-          <button type="submit" className="flex-1 py-2.5 text-sm font-semibold text-white bg-accent rounded-xl cursor-pointer transition-all duration-200 hover:bg-accent-hover hover:shadow-[0_4px_20px_var(--color-accent-muted)] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed" disabled={loading}>
-            {isEdit ? 'Save Changes' : 'Add Entry'}
+          <button type="submit" className="flex-1 py-2.5 text-sm font-semibold text-white bg-accent rounded-xl cursor-pointer transition-colors duration-150 hover:bg-accent-hover active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed" disabled={loading}>
+            {isEdit ? 'Save changes' : 'Add entry'}
           </button>
         </div>
       </form>

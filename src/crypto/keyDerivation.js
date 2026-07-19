@@ -14,7 +14,6 @@ const KEY_LENGTH = 256; // bits
  * @returns {Promise<CryptoKey>} Non-exportable AES-GCM key
  */
 export async function deriveKey(password, salt) {
-  // Import the password as a raw key
   const passwordKey = await crypto.subtle.importKey(
     'raw',
     stringToBuffer(password),
@@ -23,7 +22,6 @@ export async function deriveKey(password, salt) {
     ['deriveKey']
   );
 
-  // Derive AES-GCM key using PBKDF2
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
@@ -38,6 +36,35 @@ export async function deriveKey(password, salt) {
     },
     false, // non-exportable — stays in memory only
     ['encrypt', 'decrypt']
+  );
+}
+
+/**
+ * Same PBKDF2 material as deriveKey, returned as raw bits.
+ * Used only to wrap the vault key for biometric unlock (then discarded).
+ *
+ * @param {string} password
+ * @param {Uint8Array} salt
+ * @returns {Promise<ArrayBuffer>} 32 raw key bytes
+ */
+export async function deriveRawKeyBits(password, salt) {
+  const passwordKey = await crypto.subtle.importKey(
+    'raw',
+    stringToBuffer(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+
+  return crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: salt,
+      iterations: PBKDF2_ITERATIONS,
+      hash: 'SHA-256',
+    },
+    passwordKey,
+    KEY_LENGTH
   );
 }
 

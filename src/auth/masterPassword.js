@@ -98,5 +98,12 @@ export async function changeMasterPassword(currentPassword, newPassword, newHint
   // Re-encrypt settings
   await saveSettings(settings, newKey);
 
+  // Biometric wrap was tied to the old key material — clear enrollment
+  const { disableBiometric } = await import('./biometric');
+  await disableBiometric();
+  if (settings.biometricEnabled) {
+    await saveSettings({ ...settings, biometricEnabled: false }, newKey);
+  }
+
   return newKey;
 }

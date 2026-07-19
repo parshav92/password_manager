@@ -1,7 +1,7 @@
 // Password generator component — cryptographically secure with rejection sampling
 
 import { useState, useCallback, useEffect } from 'react';
-import { RefreshCw, Copy, Check, Sparkles } from 'lucide-react';
+import { RefreshCw, Copy, Check } from 'lucide-react';
 import { PASSWORD_CHARS } from '../../utils/constants';
 import { calculateStrength } from '../../utils/passwordStrength';
 import { copyToClipboard } from '../../utils/clipboard';
@@ -21,7 +21,7 @@ function secureRandomIndex(max) {
   return value % max;
 }
 
-export default function PasswordGenerator({ onSelect, onClose }) {
+export default function PasswordGenerator({ onSelect }) {
   const [length, setLength] = useState(18);
   const [options, setOptions] = useState({
     uppercase: true, lowercase: true, numbers: true, symbols: true, excludeAmbiguous: false,
@@ -54,7 +54,7 @@ export default function PasswordGenerator({ onSelect, onClose }) {
   const strength = calculateStrength(password);
 
   const strengthColor = {
-    'Weak': 'bg-bad', 'Fair': 'bg-warn', 'Good': 'bg-blue-400', 'Strong': 'bg-ok', 'None': 'bg-txt-tertiary',
+    Weak: 'bg-bad', Fair: 'bg-warn', Good: 'bg-accent', Strong: 'bg-ok', None: 'bg-txt-tertiary',
   };
 
   const handleCopy = async () => {
@@ -125,11 +125,11 @@ export default function PasswordGenerator({ onSelect, onClose }) {
 
       {/* Use button */}
       <button
-        className="flex items-center justify-center gap-1.5 w-full py-2.5 text-sm font-semibold text-white bg-accent rounded-xl cursor-pointer transition-all duration-200 hover:bg-accent-hover active:scale-[0.98]"
+        type="button"
+        className="w-full py-2.5 text-sm font-semibold text-white bg-accent rounded-xl cursor-pointer transition-colors duration-150 hover:bg-accent-hover active:scale-[0.99]"
         onClick={() => onSelect(password)}
       >
-        <Sparkles size={13} />
-        Use This Password
+        Use password
       </button>
     </div>
   );
